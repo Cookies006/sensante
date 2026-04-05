@@ -3,10 +3,10 @@ SenSante - Exploration du dataset patients_dakar.csv
 Lab 1 : Git, Python et Structure Projet
 """
 import pandas as pd
-
+import matplotlib.pyplot as plt
 
 # ===== CHARGER LES DONNEES =====
-df = pd.read_csv("data/patients_dakar.csv" , encoding="cp437")
+df = pd.read_csv("data/patients_dakar.csv" , encoding="latin1")
 
 
 # ===== NETTOYAGE DES NOMS DE COLONNES =====
@@ -54,3 +54,21 @@ print("\n" + "= " * 50)
 print("Exploration terminee !")
 print("Prochain lab : entrainer un modele ML")
 print("= " * 50)
+
+# ===== GRAPHIQUE SEXE & DIAGNOSTIC =====
+
+sexe_diag = df.groupby(["sexe", "diagnostic"]).size().unstack()
+
+print("\n--- Nombre de patients par sexe et diagnostic ---")
+print(sexe_diag)
+
+print("\n--- Graphique sexe et diagnostic ---")
+
+sexe_diag.plot(kind="bar")
+
+plt.title("Nombre de patients par sexe et diagnostic")
+plt.xlabel("Sexe")
+plt.ylabel("Nombre de patients")
+plt.xticks(rotation=0)
+
+plt.show()
