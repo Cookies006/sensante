@@ -160,3 +160,79 @@ print(f"\nProbabilites par classe :")
 for classe, proba in zip(model_loaded.classes_, probas):
     bar = '#' * int(proba * 30)
     print(f" {classe:8s} : {proba:.1%} {bar}")
+
+
+#exo1 — Analyser les importances des features
+importances = model.feature_importances_
+for name, imp in sorted(zip(feature_cols, importances),
+key=lambda x: x[1], reverse=True):
+    print(f" {name:20s} : {imp:.3f}")
+
+
+
+
+
+# Exercice 2 — Tester avec 3 patients fictifs
+
+patients = [
+    {
+        'nom': 'Patient 1 — Jeune sans symptômes',
+        'age': 19,
+        'sexe': 'M',
+        'temperature': 37.0,
+        'tension_sys': 120,
+        'toux': False,
+        'fatigue': False,
+        'maux_tete': False,
+        'region': 'Dakar'
+    },
+    {
+        'nom': 'Patient 2 — Adulte avec forte fièvre',
+        'age': 35,
+        'sexe': 'F',
+        'temperature': 40.2,
+        'tension_sys': 105,
+        'toux': True,
+        'fatigue': True,
+        'maux_tete': True,
+        'region': 'Ziguinchor'
+    },
+    {
+        'nom': 'Patient 3 — Personne âgée avec toux',
+        'age': 68,
+        'sexe': 'M',
+        'temperature': 38.5,
+        'tension_sys': 145,
+        'toux': True,
+        'fatigue': True,
+        'maux_tete': False,
+        'region': 'Saint-Louis'
+    }
+]
+
+for patient in patients:
+    sexe_enc = le_sexe_loaded.transform([patient['sexe']])[0]
+    region_enc = le_region_loaded.transform([patient['region']])[0]
+
+    features = [
+        patient['age'],
+        sexe_enc,
+        patient['temperature'],
+        patient['tension_sys'],
+        int(patient['toux']),
+        int(patient['fatigue']),
+        int(patient['maux_tete']),
+        region_enc
+    ]
+
+    diagnostic = model_loaded.predict([features])[0]
+    probas = model_loaded.predict_proba([features])[0]
+    proba_max = probas.max()
+
+    print(f"\n--- {patient['nom']} ---")
+    print(f"Diagnostic : {diagnostic}")
+    print(f"Probabilité : {proba_max:.1%}")
+    for classe, proba in zip(model_loaded.classes_, probas):
+        bar = '#' * int(proba * 30)
+        print(f"  {classe:8s} : {proba:.1%} {bar}")
+
