@@ -11,13 +11,29 @@ app = FastAPI (
     version =" 0.2.0 "
 )
 # Route de base : verifier que l'API fonctionne
-@app . get ("/health")
+@app .get ("/health")
 def health_check () :
     """ Verification de l'etat de l'API."""
     return {
         "status": "ok",
         "message": "SenSante API is running"
     }
+
+
+from fastapi . middleware . cors import CORSMiddleware
+# Autoriser les requetes depuis le frontend
+app . add_middleware (
+CORSMiddleware ,
+allow_origins =["*"] , # En dev : tout accepter
+allow_credentials = True ,
+allow_methods =["*"] ,
+allow_headers =["*"] ,
+)
+
+
+
+
+
 
 
 # --- Schemas Pydantic ---
@@ -46,10 +62,10 @@ model = joblib.load ("models/model.pkl")
 le_sexe = joblib.load ("models/encoder_sexe.pkl ")
 le_region = joblib.load ("models/encoder_region.pkl")
 feature_cols = joblib.load ("models/feature_cols.pkl")
-print ( f" Modele charge : { type ( model ). __name__ }")
-print ( f" Classes : { list ( model . classes_ )}")
+print ( f" Modele charge : { type(model). __name__ }")
+print ( f" Classes : { list( model.classes_ )}")
 
-@app . post ("/predict", response_model = DiagnosticOutput )
+@app .post ("/predict", response_model = DiagnosticOutput )
 def predict ( patient: PatientInput ) :
     """Predire un diagnostic a partir des symptomes d'un patient . Recoit les symptomes en JSON , renvoie le diagnostic ,la probabilite et une recommandation ."""
 # 1. Encoder les variables categoriques
@@ -73,7 +89,7 @@ def predict ( patient: PatientInput ) :
         )
     
     # 2. Construire le vecteur de features
-    features = np.array([[
+    features = np.array ([[
         patient.age ,
         sexe_enc ,
         patient.temperature ,
@@ -99,16 +115,25 @@ def predict ( patient: PatientInput ) :
 
     # 5. Generer la recommandation
     messages = {
-        " palu ": " Suspicion de paludisme . Consultez un medecin rapidement .",
-        " grippe ": " Suspicion de grippe . Repos et hydratation recommandes .",
-        " typh ": " Suspicion de typhoide . Consultation medicale necessaire .",
-        " sain ": "Pas de pathologie detectee . Continuez a surveiller ."
+        "paludisme": " Suspicion de paludisme . Consultez un medecin rapidement .",
+        "grippe": " Suspicion de grippe . Repos et hydratation recommandes .",
+        "typhoide": " Suspicion de typhoide . Consultation medicale necessaire .",
+        "sain": "Pas de pathologie detectee . Continuez a surveiller ."
     }
 
     # 6. Renvoyer le resultat
     return DiagnosticOutput (
         diagnostic = diagnostic,
-        probabilite = round(proba_max, 2) ,
+        probabilite = round(proba_max, 2),
         confiance = confiance,
         message = messages.get(diagnostic, " Consultez un medecin .")
 )
+
+@app.get("/model-info")
+def model_info():
+    return {
+        "type": type(model).__name__,
+        "nombre_arbres": model.n_estimators,
+        "classes": list(model.classes_),
+        "nombre_features": model.n_features_in_
+    }
