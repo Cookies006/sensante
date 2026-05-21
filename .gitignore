@@ -4,6 +4,8 @@ __pycache__ /
 *. pyc
 venv /
 . env
+# Cles API - NE JAMAIS COMMITTER
+.env
 # Modele ML ( trop gros pour GitHub )
 models /*. pkl
 # Fichiers OS
